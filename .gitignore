@@ -1,0 +1,8 @@
+# Allowlist: ignore everything by default, unignore intended project files
+*
+!.gitignore
+!.env.example
+!README.md
+!config.alloy
+!values.yaml
+!*.sh

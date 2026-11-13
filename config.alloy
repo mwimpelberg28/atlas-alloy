@@ -1,0 +1,39 @@
+// MongoDB Atlas Prometheus integration -> Grafana Cloud (remote_write)
+// Translated from scrape_config.yml. Credentials come from env vars
+// injected from the "alloy-atlas-secrets" Kubernetes Secret.
+
+discovery.http "atlas" {
+  url              = "https://cloud.mongodb.com/prometheus/v1.0/groups/" + string.trim_prefix(sys.env("ATLAS_PROM_USER"), "prom_user_") + "/discovery"
+  refresh_interval = "60s"
+
+  basic_auth {
+    username = sys.env("ATLAS_PROM_USER")
+    password = sys.env("ATLAS_PROM_PASSWORD")
+  }
+}
+
+prometheus.scrape "atlas_mongo" {
+  job_name        = "mongodb-atlas"
+  targets         = discovery.http.atlas.targets
+  scrape_interval = "60s"
+  metrics_path    = "/metrics"
+  scheme          = "https"
+
+  basic_auth {
+    username = sys.env("ATLAS_PROM_USER")
+    password = sys.env("ATLAS_PROM_PASSWORD")
+  }
+
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = sys.env("PROM_REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = sys.env("PROM_USER")
+      password = sys.env("PROM_PASSWORD")
+    }
+  }
+}

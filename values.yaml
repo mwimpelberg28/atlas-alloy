@@ -1,0 +1,18 @@
+# grafana/alloy chart values. config.alloy is injected by deploy.sh via --set-file.
+controller:
+  # Single replica: one scraper avoids duplicate series.
+  type: deployment
+  replicas: 1
+
+alloy:
+  stabilityLevel: generally-available
+  # Credentials/URLs referenced by sys.env() in config.alloy
+  envFrom:
+    - secretRef:
+        name: alloy-atlas-secrets
+  configMap:
+    create: true
+
+# Not a node agent; no host-level collection needed.
+crds:
+  create: false
